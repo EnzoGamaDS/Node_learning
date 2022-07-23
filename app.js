@@ -1,11 +1,20 @@
 const express = require("express");
 const uuid = require('uuid').v4;
+const fs = require('fs');
 
 const app = express();
 
 app.use(express.json());
 
-const products = [];
+let products = [];
+
+fs.readFile("products.json", "utf-8", (err, data) => {
+    if (err) {
+        console.log(err);
+    }else{
+        products = JSON.parse(data);
+    }
+})
 
 // Body => Sempre que eu quiser enviar dados para minha aplicação
 // Params => Vem na URL -> /products/12312312341/123231/teste
@@ -21,6 +30,7 @@ app.post("/products", (request, response) => {
         id: uuid(),
     };
     products.push(product);
+    productFile();
 
     return response.json(product);
 });
@@ -47,6 +57,7 @@ app.put("/products/:id", (request, response) => {
         name,
         price
     };
+    productFile();
 
     return response.json({message: "Produto alterado com sucesso"});
 });
@@ -59,6 +70,16 @@ app.delete("/products/:id", (request, response) => {
 
     return response.json({message: "Produto removido com sucesso ! "})
 });
+
+function productFile(){
+    fs.writeFile("products.json", JSON.stringify(products), (err) => {
+        if (err) {
+            console.log(err);
+        }else{
+            console.log("Produto inserido")
+        }
+    });
+}
 
 app.listen(4002, () => console.log("Servidore rodando na porta 4002"));
 
